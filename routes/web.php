@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+require base_path('routes/admin/categories.php');
+Route::get('admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
