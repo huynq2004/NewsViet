@@ -2,6 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TagController;
+use App\Http\Controllers\AdminController;
+
+require base_path('routes/admin/categories.php');
 
 // Route quản lý thẻ
 Route::prefix('tags')->group(function () {
@@ -20,3 +23,4 @@ Route::prefix('tags')->group(function () {
     // Xóa một thẻ
     Route::delete('/{id}', [TagController::class, 'destroy'])->name('tags.destroy');
 });
+
