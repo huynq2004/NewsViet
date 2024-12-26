@@ -6,21 +6,32 @@ use App\Http\Controllers\AdminController;
 
 require base_path('routes/admin/categories.php');
 
-// Route quản lý thẻ
-Route::prefix('tags')->group(function () {
-    // Lấy danh sách tất cả các thẻ
-    Route::get('/', [TagController::class, 'index'])->name('tags.index');
+// Group các route dành cho admin quản lý tags
+Route::prefix('admin')->name('admin.')->group(function () {
 
-    // Tạo thẻ mới
-    Route::post('/', [TagController::class, 'store'])->name('tags.store');
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    // Hiển thị danh sách tags
+    Route::get('/tags', [TagController::class, 'index'])->name('tags.index');
 
-    // Lấy thông tin một thẻ cụ thể
-    Route::get('/{id}', [TagController::class, 'show'])->name('tags.show');
+    // Hiển thị form tạo mới tag
+    Route::get('/tags/create', [TagController::class, 'create'])->name('tags.create');
 
-    // Cập nhật thông tin một thẻ
-    Route::put('/{id}', [TagController::class, 'update'])->name('tags.update');
+    // Lưu tag mới
+    Route::post('/tags', [TagController::class, 'store'])->name('tags.store');
 
-    // Xóa một thẻ
-    Route::delete('/{id}', [TagController::class, 'destroy'])->name('tags.destroy');
+    // Hiển thị thông tin chi tiết của tag và các bài viết liên quan
+    Route::get('/tags/{id}', [TagController::class, 'show'])->name('tags.show');
+
+    // Hiển thị form chỉnh sửa tag
+    Route::get('/tags/{id}/edit', [TagController::class, 'edit'])->name('tags.edit');
+
+    // Cập nhật tag
+    Route::put('/tags/{id}', [TagController::class, 'update'])->name('tags.update');
+
+    // Xóa tag
+    Route::delete('/tags/{id}', [TagController::class, 'destroy'])->name('tags.destroy');
+
+    // Hiển thị danh sách bài viết liên quan đến một tag
+    Route::get('/tags/{id}/articles', [TagController::class, 'articlesByTag'])->name('tags.articles');
 });
 
