@@ -54,7 +54,7 @@
     <header class="header">
         <div class="container d-flex justify-content-between align-items-center">
             <div class="logo d-flex align-items-center">
-                <img src="/path-to-logo.png" alt="Logo">
+                <img src="public/images/logoApp.png" alt="Logo">
                 <h1>VietNews</h1>
             </div>
             <nav class="d-flex align-items-center">
