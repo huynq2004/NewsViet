@@ -1,34 +1,27 @@
-<!-- resources/views/author/create.blade.php -->
-{{-- form tạo bài viết mớimới --}}
-@extends('layouts.app')
+@extends('layouts.author')
 
 @section('content')
-    <h2>Thêm bài viết mới</h2>
-    <form method="POST" action="{{ route('author.store') }}" enctype="multipart/form-data">
+<div class="container mt-4">
+    <h1>Tạo bài viết mới</h1>
+    <form action="{{ route('author.articles.store') }}" method="POST">
         @csrf
-        <label for="title">Tiêu đề:</label>
-        <input type="text" name="title" required>
-
-        <label for="content">Nội dung:</label>
-        <textarea name="content" required></textarea>
-
-        <label for="category_id">Danh mục:</label>
-        <select name="category_id">
-            @foreach($categories as $category)
-                <option value="{{ $category->id }}">{{ $category->name }}</option>
-            @endforeach
-        </select>
-
-        <label for="tags">Tags:</label>
-        <select name="tags[]" multiple>
-            @foreach($tags as $tag)
-                <option value="{{ $tag->id }}">{{ $tag->name }}</option>
-            @endforeach
-        </select>
-
-        <label for="image">Ảnh đại diện:</label>
-        <input type="file" name="image">
-
-        <button type="submit">Tạo bài viết</button>
+        <div class="form-group">
+            <label for="title">Tiêu đề</label>
+            <input type="text" name="title" id="title" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="category_id">Danh mục</label>
+            <select name="category_id" id="category_id" class="form-control" required>
+                @foreach($categories as $category)
+                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="content">Nội dung</label>
+            <textarea name="content" id="content" class="form-control" rows="5" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Lưu bài viết</button>
     </form>
+</div>
 @endsection
