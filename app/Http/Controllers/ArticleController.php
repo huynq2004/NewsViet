@@ -1,134 +1,140 @@
 <?php
 
-// app/Http/Controllers/ArticleController.php
-
 namespace App\Http\Controllers;
 
 use App\Models\Article;
-use App\Models\Category;
-use App\Models\Tag;
-use App\Models\User;
+use App\Repositories\ArticleRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ArticleController extends Controller
 {
-    // Người đọc: Hiển thị danh sách bài viết
-    public function index(Request $request)
+    // Khai báo repository
+    protected $articleRepository;
+
+    public function __construct(ArticleRepository $articleRepository)
     {
-        $articles = Article::with('category', 'author')->paginate(10); // Lấy bài viết kèm theo thông tin category và author
-        return view('reader.index', compact('articles'));
+        $this->articleRepository = $articleRepository;
     }
 
-    // Người đọc: Tìm kiếm bài viết
-    public function search(Request $request)
+    // Hiển thị danh sách bài viết
+    public function index()
     {
-        $keyword = $request->input('keyword');
-        $articles = Article::where('title', 'like', "%$keyword%")
-                            ->orWhere('content', 'like', "%$keyword%")
-                            ->with('category', 'author')
-                            ->paginate(10);
-        return view('reader.index', compact('articles'));
+        $articles = Article::all();  // Lấy tất cả bài viết
+        return view('admin.articles.index', compact('articles'));
     }
 
-    // Người đọc: Xem chi tiết bài viết
+    // Xem chi tiết bài viết
     public function show($id)
     {
-        $article = Article::with('category', 'author', 'comments')->findOrFail($id);
-        return view('reader.show', compact('article'));
+        // Lấy bài viết theo ID
+        $article = Article::findOrFail($id);
+
+        // Lấy các tag của bài viết từ function fn_get_article_tags
+        $tags = $this->articleRepository->getArticleTags($id);  // Sử dụng phương thức repository
+
+        // Trả về view chi tiết bài viết
+        return view('reader.articles.show', compact('article', 'tags'));
     }
 
-    // Tác giả: Thêm bài viết
+    // Tạo bài viết mới (cho tác giả)
     public function create()
     {
-        $categories = Category::all();
-        $tags = Tag::all();
-        return view('author.create', compact('categories', 'tags'));
+        // Lấy tất cả danh mục từ bảng categories
+        $categories = \App\Models\Category::all();
+    
+        // Truyền biến categories vào view
+        return view('author.articles.create', compact('categories'));
     }
+    
 
+    // Lưu bài viết mới (cho tác giả)
     public function store(Request $request)
     {
+        // Validate dữ liệu
         $request->validate([
-            'title' => 'required|max:255',
-            'content' => 'required',
+            'title' => 'required|string',
+            'content' => 'required|string',
             'category_id' => 'required|exists:categories,id',
-            'tags' => 'nullable|array',
-            'tags.*' => 'exists:tags,id'
+            'image' => 'nullable|image|max:2048',
         ]);
 
-        $article = Article::create([
-            'title' => $request->title,
-            'content' => $request->content,
-            'category_id' => $request->category_id,
-            'author_id' => auth()->id(), // Lấy ID của tác giả từ session
-            'image' => $request->image // Xử lý ảnh nếu có
-        ]);
+        // Tạo bài viết mới và lưu vào cơ sở dữ liệu
+        $article = new Article($request->all());
+        $article->author_id = auth()->id();  // Gán tác giả là người đăng nhập
+        $article->save();
 
-        if ($request->tags) {
-            $article->tags()->sync($request->tags);
-        }
-
-        return redirect()->route('author.index')->with('success', 'Bài viết đã được tạo!');
+        return redirect()->route('author.articles.index');
     }
 
-    // Tác giả: Sửa bài viết
+    // Chỉnh sửa bài viết (cho tác giả)
     public function edit($id)
     {
-        $article = Article::with('tags')->findOrFail($id);
-        $categories = Category::all();
-        $tags = Tag::all();
-        return view('author.edit', compact('article', 'categories', 'tags'));
+        $article = Article::findOrFail($id);
+        return view('author.articles.edit', compact('article'));
     }
 
+    // Cập nhật bài viết (cho tác giả)
     public function update(Request $request, $id)
     {
+        // Validate dữ liệu
         $request->validate([
-            'title' => 'required|max:255',
-            'content' => 'required',
+            'title' => 'required|string',
+            'content' => 'required|string',
             'category_id' => 'required|exists:categories,id',
-            'tags' => 'nullable|array',
-            'tags.*' => 'exists:tags,id'
+            'image' => 'nullable|image|max:2048',
         ]);
 
+        // Cập nhật bài viết
         $article = Article::findOrFail($id);
-        $article->update([
-            'title' => $request->title,
-            'content' => $request->content,
-            'category_id' => $request->category_id,
-            'image' => $request->image // Xử lý ảnh nếu có
-        ]);
+        $article->update($request->all());
 
-        if ($request->tags) {
-            $article->tags()->sync($request->tags);
-        }
-
-        return redirect()->route('author.index')->with('success', 'Bài viết đã được cập nhật!');
+        return redirect()->route('author.articles.index');
     }
 
-    // Tác giả: Xóa bài viết
+    // Xóa bài viết (Admin và Tác giả có thể xóa bài viết của mình)
     public function destroy($id)
     {
         $article = Article::findOrFail($id);
-        $article->delete();
-        return redirect()->route('author.index')->with('success', 'Bài viết đã bị xóa!');
+
+        // Kiểm tra nếu người dùng là admin hoặc là tác giả của bài viết
+        if (auth()->user()->is_admin || auth()->id() == $article->author_id) {
+            $article->delete();
+            return redirect()->route('articles.index');
+        }
+
+        return redirect()->route('articles.index')->withErrors('Bạn không có quyền xóa bài viết này.');
     }
 
-    // Quản trị viên: Xóa bài viết
-    public function adminDestroy($id)
+    // Lấy số lượng bài viết của tác giả (dùng function fn_count_articles_by_author)
+    public function getArticleCountByAuthor($author_id)
     {
-        $article = Article::findOrFail($id);
-        $article->delete();
-        return redirect()->route('admin.index')->with('success', 'Bài viết đã bị xóa!');
+        // Gọi phương thức trong repository để lấy số lượng bài viết của tác giả
+        $count = $this->articleRepository->countArticlesByAuthor($author_id);
+        return response()->json($count);
     }
-    // Admin Controller Method
-public function adminIndex() {
-    $articles = Article::all(); // Admin có thể xem tất cả bài viết
-    return view('admin.index', compact('articles'));
-}
 
-// Author Controller Method
-public function authorIndex() {
-    $articles = Article::where('author_id', auth()->id())->get(); // Tác giả chỉ xem bài viết của mình
-    return view('author.index', compact('articles'));
-}
+    // Hiển thị bài viết theo danh mục với chi tiết
+    public function getArticlesByCategory($category_id)
+    {
+        // Gọi phương thức trong repository để lấy bài viết theo danh mục
+        $articles = $this->articleRepository->getArticlesByCategory($category_id);
+        return view('admin.articles.category', compact('articles'));
+    }
 
+    // Lấy danh sách bài viết cùng các thể loại và thẻ (sử dụng view vw_article_details)
+    public function getArticlesWithDetails()
+    {
+        // Gọi phương thức trong repository để lấy danh sách bài viết với thông tin chi tiết
+        $articles = $this->articleRepository->getArticleDetails();
+        return view('admin.articles.details', compact('articles'));
+    }
+
+    // Lấy danh sách bài viết theo tác giả và thể loại (sử dụng view view_articles_with_details)
+    public function getArticlesWithCategoryAndTags($author_id)
+    {
+        // Gọi phương thức trong repository để lấy bài viết theo tác giả và thể loại
+        $articles = $this->articleRepository->getArticlesWithDetails();
+        return view('admin.articles.author_category', compact('articles'));
+    }
 }
