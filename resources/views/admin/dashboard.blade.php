@@ -43,7 +43,7 @@
                     <div class="card-body text-center">
                         <h5 class="card-title">Quản lý Bài viết</h5>
                         <p class="card-text">Thêm, sửa, xóa bài viết trên hệ thống.</p>
-                        <a href="#" class="btn btn-primary">Truy cập</a>
+                        <a href="{{ route('admin.articles.index') }}" class="btn btn-primary">Truy cập</a> <!-- Dành cho Admin -->
                     </div>
                 </div>
             </div>
