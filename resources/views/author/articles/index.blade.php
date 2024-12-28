@@ -1,21 +1,35 @@
-<!-- resources/views/author/index.blade.php -->
-{{-- hiển thị danh sách bài viết của tác giảgiả --}}
-@extends('layouts.app')
+@extends('layouts.author')
 
 @section('content')
-    <h2>Danh sách bài viết của bạn</h2>
-
-    <div class="articles">
-        @foreach($articles as $article)
-            <div class="article">
-                <h3><a href="{{ route('reader.show', $article->id) }}">{{ $article->title }}</a></h3>
-                <a href="{{ route('author.edit', $article->id) }}">Sửa</a>
-                <form method="POST" action="{{ route('author.destroy', $article->id) }}" style="display:inline;">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit">Xóa</button>
-                </form>
-            </div>
-        @endforeach
-    </div>
+<div class="container mt-4">
+    <h1>Quản lý Bài viết của bạn</h1>
+    <a href="{{ route('author.articles.create') }}" class="btn btn-primary mb-3">Tạo bài viết mới</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Tiêu đề</th>
+                <th>Danh mục</th>
+                <th>Thời gian tạo</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($articles as $article)
+                <tr>
+                    <td>{{ $article->title }}</td>
+                    <td>{{ $article->category->name }}</td>
+                    <td>{{ $article->created_at->format('d/m/Y') }}</td>
+                    <td>
+                        <a href="{{ route('author.articles.edit', $article->id) }}" class="btn btn-warning">Sửa</a>
+                        <form action="{{ route('author.articles.destroy', $article->id) }}" method="POST" style="display: inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+</div>
 @endsection
