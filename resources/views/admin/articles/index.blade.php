@@ -1,20 +1,34 @@
-<!-- resources/views/admin/index.blade.php -->
-{{-- Quản lý bài viết(xóa bài viếtviết) --}}
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('content')
-    <h2>Quản lý bài viết</h2>
-
-    <div class="articles">
-        @foreach($articles as $article)
-            <div class="article">
-                <h3><a href="{{ route('reader.show', $article->id) }}">{{ $article->title }}</a></h3>
-                <form method="POST" action="{{ route('admin.destroy', $article->id) }}" style="display:inline;">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit">Xóa</button>
-                </form>
-            </div>
-        @endforeach
+    <div class="container mt-4">
+        <h1>Quản lý Bài viết</h1>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Tiêu đề</th>
+                    <th>Danh mục</th>
+                    <th>Thời gian tạo</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($articles as $article)
+                    <tr>
+                        <td>{{ $article->title }}</td>
+                        <td>{{ $article->category->name }}</td>
+                        <td>{{ $article->created_at->format('d/m/Y') }}</td>
+                        <td>
+                            <!-- Admin chỉ có thể xóa -->
+                            <form action="{{ route('admin.articles.destroy', $article->id) }}" method="POST" style="display: inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger">Xóa</button>
+                            </form>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
 @endsection
