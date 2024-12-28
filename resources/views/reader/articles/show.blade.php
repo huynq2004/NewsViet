@@ -1,19 +1,10 @@
-<!-- resources/views/reader/show.blade.php -->
-{{-- Xem chi tiết bài viếtviết --}}
-@extends('layouts.app')
+@extends('layouts.reader')
 
 @section('content')
-    <h2>{{ $article->title }}</h2>
-    <p><strong>Tác giả:</strong> {{ $article->author->name }}</p>
-    <p><strong>Danh mục:</strong> {{ $article->category->name }}</p>
-    <p>{{ $article->content }}</p>
-
-    <div class="comments">
-        <h3>Comments</h3>
-        @foreach($article->comments as $comment)
-            <div class="comment">
-                <p><strong>{{ $comment->user->name }}:</strong> {{ $comment->content }}</p>
-            </div>
-        @endforeach
+    <div class="container mt-4">
+        <h1>{{ $article->title }}</h1>
+        <p><strong>Danh mục:</strong> {{ $article->category->name }}</p>
+        <p>{{ $article->content }}</p>
+        <p><strong>Ngày đăng:</strong> {{ $article->created_at->format('d/m/Y') }}</p>
     </div>
 @endsection
