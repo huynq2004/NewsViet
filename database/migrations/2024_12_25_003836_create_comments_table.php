@@ -28,3 +28,5 @@ return new class extends Migration
         Schema::dropIfExists('comments');
     }
 };
+
+// controller,route, thieets ke giao dien, xay dựng view trên code, làm các đối tượng csdlcsdl
