@@ -1,12 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-<<<<<<< Updated upstream
-
-Route::get('/', function () {
-    return view('welcome');
-});
-=======
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\AdminController;
 
@@ -27,4 +21,3 @@ Route::prefix('admin')->group(function () {
     Route::get('/comments/reported', [CommentController::class, 'reported'])->name('admin.comments.reported'); // Danh sách bình luận bị báo cáo
 });
 
->>>>>>> Stashed changes
