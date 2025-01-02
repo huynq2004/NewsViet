@@ -1,15 +1,27 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Repositories\CategoryRepository;
 use App\Models\Category;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
+    protected $categoryRepository;
+
+    public function __construct(CategoryRepository $categoryRepository)
+    {
+        $this->categoryRepository = $categoryRepository;
+    }
     /**
      * Display a listing of the resource.
      */
+    public function countChild(string $id)
+    {
+        $childnum = $this->categoryRepository->countChildCategory($id);
+        return view('categories.index', compact('childnum'));
+    }
+
     public function index()
     {
         $categories = Category::with('parent')->paginate(5);
