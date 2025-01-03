@@ -1,5 +1,6 @@
 <?php
 
+
 namespace App\Repositories;
 
 use Illuminate\Support\Facades\DB;
@@ -42,11 +43,19 @@ class UserRepository
         DB::table('users')->where('id', $user_id)->delete();
     }
 
+    // Lấy tất cả người dùng từ view 'user_details'
     public function getAllUsers()
     {
         return DB::table('user_details')->get(); // Sử dụng view user_details
     }
 
+    // Lấy người dùng theo ID từ view 'user_details'
+    public function getUserById($id)
+    {
+        return DB::table('user_details')->where('user_id', $id)->first(); // Lấy người dùng theo ID
+    }
+
+    // Lấy người dùng theo vai trò và nhóm theo ngày cập nhật
     public function getUsersByRoleGroupedByUpdatedAt($role_name)
     {
         return DB::table('users_by_role_and_updated_at')
