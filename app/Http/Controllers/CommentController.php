@@ -2,102 +2,118 @@
 
 namespace App\Http\Controllers;
 
-use App\Repositories\CommentRepository;
 use App\Models\Comment;
 use Illuminate\Http\Request;
 
 class CommentController extends Controller
 {
-    
-    public function _construct(CommentRepository $CommentRepository)
-    {
-        $this ->CommentRepository = $CommentRepository;
+    // Hiển thị danh sách bình luận của bài viết (có form thêm bình luận)
+    public function index($articleId)
+{
+    // Ép kiểu $articleId thành kiểu int hoặc bigint
+    $articleId = (int) $articleId;
+
+    // Lấy danh sách bình luận của bài viết
+    $comments = Comment::where('article_id', $articleId)
+                       ->orderBy('created_at', 'desc')
+                       ->get();
+
+    // Trả về view hiển thị danh sách bình luận
+    return view('reader.comments.index', compact('comments', 'articleId'));
+}
+
+public function edit($id)
+{
+    // Tìm bình luận theo ID hoặc trả về lỗi nếu không tìm thấy
+    $comment = Comment::findOrFail($id);
+
+    // Kiểm tra xem người dùng có quyền chỉnh sửa bình luận này không
+    if ($comment->user_id !== auth()->id()) {
+        return redirect()->back()->with('error', 'Bạn không có quyền chỉnh sửa bình luận này.');
     }
 
-    public function countChild(string $id)
-    {
-        $childnum = $this->CommentRepository->countChildComment(id:$id);
-        return view( 'comments.index', compact('comment'));
-    }
-    /**
-     * Hiển thị danh sách bình luận.
-     */
-    public function index()
-    {
-        $comments = Comment::with(['user', 'article'])->get(); // Lấy bình luận kèm thông tin người dùng và bài viết
-        return view('admin.comments.index', compact('comments'));
-    }
+    // Trả về view để chỉnh sửa bình luận
+    return view('reader.comments.edit', compact('comment'));
+}
 
-    /**
-     * Hiển thị form thêm bình luận.
-     */
-    public function create()
-    {
-        
-        return view('admin.comments.create');
-    }
 
-    /**
-     * Lưu bình luận mới vào cơ sở dữ liệu.
-     */
-    public function store(Request $request)
-    {
-        $request->validate([
-            'content' => 'required|string',
-            'article_id' => 'required|exists:articles,id',
-            'user_id' => 'required|exists:users,id',
-        ]);
+    // Thêm bình luận mới
+    public function store(Request $request, $articleId)
+{
+    // Ép kiểu $articleId thành kiểu int
+    $articleId = (int) $articleId;
 
-        Comment::create($request->all());
-        return redirect()->route('admin.comments.index')->with('success', 'Thêm bình luận thành công.');
-    }
+    // Xác thực dữ liệu đầu vào
+    $request->validate([
+        'content' => 'required|string|max:1000',
+    ]);
 
-    /**
-     * Hiển thị form sửa bình luận.
-     */
-    public function edit(Comment $comment)
-    {
-        return view('admin.comments.edit', compact('comment'));
-    }
-    
+    // Tạo bình luận mới
+    $comment = new Comment();
+    $comment->content = $request->input('content');
+    $comment->article_id = $articleId;
+    $comment->user_id = auth()->user()->id; // Giả sử người dùng đã đăng nhập
+    $comment->save();
 
-    /**
-     * Cập nhật thông tin bình luận.
-     */
-    public function update(Request $request, Comment $comment)
-    {
-        $request->validate([
-            'content' => 'required|string',
-        ]);
+    return redirect()->route('comments.index', ['articleId' => $articleId])
+                     ->with('success', 'Bình luận đã được thêm.');
+}
 
-        $comment->update($request->only('content'));
-        return redirect()->route('admin.comments.index')->with('success', 'Cập nhật bình luận thành công.');
+
+public function show($id)
+{
+    $comment = Comment::findOrFail($id);
+    return view('reader.comments.show', compact('comment'));
+}
+
+public function update(Request $request, $id)
+{
+    // Xác thực dữ liệu đầu vào
+    $request->validate([
+        'content' => 'required|string|max:1000',
+    ]);
+
+    // Tìm bình luận theo ID hoặc trả về lỗi nếu không tìm thấy
+    $comment = Comment::findOrFail($id);
+
+    // Kiểm tra quyền sửa bình luận
+    if ($comment->user_id !== auth()->id()) {
+        return redirect()->back()->with('error', 'Bạn không có quyền chỉnh sửa bình luận này.');
     }
 
-    /**
-     * Xóa bình luận.
-     */
-    public function destroy(Comment $comment)
-    {
-        $comment->delete();
-        return redirect()->route('admin.comments.index')->with('success', 'Xóa bình luận thành công.');
+    // Cập nhật nội dung bình luận
+    $comment->content = $request->input('content');
+    $comment->save();
+
+    // Redirect về trang danh sách bình luận của bài viết
+    return redirect()->route('comments.index', ['articleId' => $comment->article_id])
+                     ->with('success', 'Bình luận đã được cập nhật.');
+}
+
+
+public function destroy($id)
+{
+    $comment = Comment::findOrFail($id);
+    if ($comment->user_id !== auth()->id()) {
+        return redirect()->back()->with('error', 'Bạn không có quyền xóa bình luận này.');
     }
 
-    /**
-     * Hiển thị danh sách bình luận chưa duyệt.
-     */
-    public function pending()
-    {
-        $comments = Comment::where('status', 'pending')->with(['user', 'article'])->get();
-        return view('admin.comments.pending', compact('comments'));
-    }
+    $articleId = $comment->article_id;
+    $comment->delete();
 
-    /**
-     * Hiển thị danh sách bình luận bị báo cáo.
-     */
-    public function reported()
-    {
-        $comments = Comment::where('status', 'reported')->with(['user', 'article'])->get();
-        return view('admin.comments.reported', compact('comments'));
-    }
+    return redirect()->route('comments.index', ['articleId' => $articleId])
+                     ->with('success', 'Bình luận đã bị xóa.');
+}
+
+
+public function report($id)
+{
+    $comment = Comment::findOrFail($id);
+    $comment->is_reported = true; // Cập nhật trạng thái báo cáo
+    $comment->save();
+
+    return redirect()->back()->with('success', 'Bình luận đã được báo cáo.');
+}
+
+
 }

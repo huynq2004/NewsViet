@@ -10,3 +10,6 @@ require base_path('routes/admin/tags.php');
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 });
+
+// Đảm bảo rằng tệp `comments.php` được bao gồm từ thư mục routes/reader/
+require __DIR__.'/reader/comments.php';
