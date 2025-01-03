@@ -9,6 +9,15 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    public function dashboard()
+    {
+        if (Auth::user()->role_id !== 1) { // Kiểm tra role_id = 1 cho Admin
+            abort(403, 'Bạn không có quyền truy cập trang này.');
+        }
+
+        return view('admin.dashboard');
+    }
+
     // Hiển thị form đăng ký
     public function showRegisterForm()
     {
@@ -43,10 +52,11 @@ class AuthController extends Controller
     // Xử lý đăng nhập
     public function login(Request $request)
     {
+
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials)) {
-            return redirect()->intended('dashboard');
+            return redirect()->intended('admin.dashboard');
         }
 
         return back()->withErrors(['email' => 'Email hoặc mật khẩu không đúng']);
