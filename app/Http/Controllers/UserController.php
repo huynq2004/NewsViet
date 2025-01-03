@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Role;
 use Illuminate\Http\Request;
-
+// use App\Repositories\
 class UserController extends Controller
 {
     // Hiển thị danh sách người dùng
     public function index()
     {
+        $users = User::with('role')->get();
         $users = User::all();
         return view('admin.users.index', compact('users'));
     }
@@ -38,7 +39,7 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
         $user->update($request->all());
-        return redirect()->route('admin.users.index');
+        return redirect()->route('users.index');
     }
 
     // Xóa tài khoản người dùng
@@ -51,24 +52,26 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        // Validate dữ liệu
+        // Xác thực dữ liệu đầu vào
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|string|in:admin,user', // Kiểm tra vai trò hợp lệ
+            'role' => 'required|string|in:admin,author,reader', // Xác nhận vai trò hợp lệ
         ]);
 
         // Tạo người dùng mới
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => bcrypt($request->password), // Mã hóa mật khẩu
-            'role' => $request->role,
+            'password' => bcrypt($request->password),
+            'role_id' => Role::where('name', $request->role)->first()->id, // Lưu role_id
         ]);
 
+        // Chuyển hướng về danh sách người dùng và thông báo thành công
         return redirect()->route('users.index')->with('success', 'Người dùng đã được thêm thành công!');
     }
+
 
 
     // Phân quyền người dùng
