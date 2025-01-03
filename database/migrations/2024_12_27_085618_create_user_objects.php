@@ -11,24 +11,29 @@ return new class extends Migration
     {
         // Tạo Trigger 1: Xóa thông tin người dùng và ghi lại lịch sử xóa
         DB::unprepared('
-            CREATE TRIGGER trg_delete_user
-            ON users
-            FOR DELETE
-            AS
-            BEGIN
-                IF EXISTS (SELECT * FROM deleted WHERE role_id = 1)
-                BEGIN
-                    PRINT "Không được phép xóa Admin!";
-                    ROLLBACK;
-                    RETURN;
-                END
+ CREATE TRIGGER trg_delete_user
+ON users
+INSTEAD OF DELETE
+AS
+BEGIN
+    -- Kiểm tra xem người dùng bị xóa có phải là Admin không
+    IF EXISTS (SELECT * FROM deleted WHERE role_id = 1)
+    BEGIN
+        RAISERROR (N"Không được phép xóa Admin!", 16, 1);
+        RETURN;
+    END
 
-                INSERT INTO deleted_users (user_id, user_name, user_email, deleted_at)
-                SELECT id, name, email, GETDATE()
-                FROM deleted;
-                PRINT "Thông tin người dùng đã được xóa.";
-            END;
-        ');
+    -- Nếu không phải Admin, thực hiện xóa và ghi lại lịch sử
+    DELETE FROM users
+    WHERE id IN (SELECT id FROM deleted);
+
+    INSERT INTO deleted_users (user_id, user_name, user_email, deleted_at)
+    SELECT id, name, email, GETDATE()
+    FROM deleted;
+END;
+
+
+');
 
         // Tạo Trigger 2: Thêm người dùng
         DB::unprepared('
@@ -127,25 +132,28 @@ return new class extends Migration
             END;
         ');
 
+
         // Tạo Procedure 2: Chỉnh sửa người dùng
         DB::unprepared('
-            CREATE PROCEDURE update_user
-                @user_id INT,
-                @name NVARCHAR(255) = NULL,
-                @email NVARCHAR(255) = NULL,  
-                @role_id INT = NULL
-            AS
-            BEGIN
-                UPDATE users
-                SET 
-                    name = ISNULL(@name, name),
-                    email = ISNULL(@email, email),  
-                    role_id = ISNULL(@role_id, role_id),
-                    updated_at = GETDATE()
-                WHERE id = @user_id;
-                PRINT "Đối tượng update thành công!";
-            END;
-        ');
+CREATE PROCEDURE update_user
+    @user_id INT,
+    @name NVARCHAR(255) = NULL,
+    @email NVARCHAR(255) = NULL,  
+    @role_id INT = NULL
+AS
+BEGIN
+    UPDATE users
+    SET 
+        name = ISNULL(@name, name),
+        email = ISNULL(@email, email),  
+        role_id = ISNULL(@role_id, role_id),
+        updated_at = GETDATE()
+    WHERE id = @user_id;
+
+END;
+
+');
+
 
         // Tạo View 1: Hiển thị thông tin danh sách người dùng
         DB::unprepared('

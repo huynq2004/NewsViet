@@ -1,20 +1,23 @@
 --Trigger 1 : Xóa thông tin người dùng và ghi lại lịch sử xóa
-CREATE TRIGGER trg_delete_user
+ CREATE TRIGGER trg_delete_user
 ON users
-FOR DELETE
+INSTEAD OF DELETE
 AS
 BEGIN
+    -- Kiểm tra xem người dùng bị xóa có phải là Admin không
     IF EXISTS (SELECT * FROM deleted WHERE role_id = 1)
     BEGIN
-        PRINT 'Không được phép xóa Admin!';
-        ROLLBACK;
+        PRINT (N"Không được phép xóa Admin!", 16, 1);
         RETURN;
     END
+
+    -- Nếu không phải Admin, thực hiện xóa và ghi lại lịch sử
+    DELETE FROM users
+    WHERE id IN (SELECT id FROM deleted);
 
     INSERT INTO deleted_users (user_id, user_name, user_email, deleted_at)
     SELECT id, name, email, GETDATE()
     FROM deleted;
-    PRINT 'Thông tin người dùng đã được xóa .';
 END;
 --Tạo bảng để lưu lịch sử xóa
 CREATE TABLE deleted_users (
@@ -119,7 +122,6 @@ BEGIN
 END;
 
 --Proc 2 : Chỉnh sửa người dùng
-
 CREATE PROCEDURE update_user
     @user_id INT,
     @name NVARCHAR(255) = NULL,
@@ -134,9 +136,8 @@ BEGIN
         role_id = ISNULL(@role_id, role_id),
         updated_at = GETDATE()
     WHERE id = @user_id;
-    PRINT 'Đối tượng update thành công!';
-END;
 
+END;
 
 --view 1: hiển thị thông tin danh sach nguoi dung
 CREATE VIEW user_details AS

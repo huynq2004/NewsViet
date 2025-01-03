@@ -19,11 +19,18 @@ class UserRepository
         ]);
     }
 
-    // Cập nhật thông tin người dùng
+    // // Cập nhật thông tin người dùng
     public function updateUser($user_id, $name = null, $email = null, $role_id = null)
     {
-        DB::select('EXEC update_user ?, ?, ?, ?', [$user_id, $name, $email, $role_id]);
+        // Sử dụng DB::statement thay vì DB::select
+        DB::statement('EXEC update_user ?, ?, ?, ?', [$user_id, $name, $email, $role_id]);
+
+        // Sau khi thực thi, trả về thông điệp hoặc xử lý sau khi gọi procedure thành công
+        return 'User updated successfully!';
     }
+
+
+
 
     // Kiểm tra vai trò người dùng
     public function getUserRole($user_id)
@@ -40,8 +47,20 @@ class UserRepository
     // Xóa người dùng 
     public function deleteUser($user_id)
     {
+        // Lấy vai trò người dùng
+        $role = DB::table('users')->where('id', $user_id)->value('role_id');
+
+        // Kiểm tra nếu là Admin
+        if ($role == 1) {
+            throw new \Exception('Không được phép xóa Admin!');
+        }
+
+        // Thực hiện xóa nếu không phải Admin
         DB::table('users')->where('id', $user_id)->delete();
     }
+
+
+
 
     // Lấy tất cả người dùng từ view 'user_details'
     public function getAllUsers()

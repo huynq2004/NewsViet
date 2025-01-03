@@ -52,8 +52,11 @@
                         <td>{{ $user->email }}</td>
                         <td>{{ $user->role->name }}</td>
 
+
+
                         <td class="text-center">
                             <!-- Các nút chỉnh sửa/xóa -->
+                            <a href="{{ route('users.show', $user->id) }}" class="btn btn-info btn-sm">Xem chi tiết</a>
                             <a href="{{ route('users.edit', $user->id) }}" class="btn btn-warning btn-sm">Chỉnh sửa</a>
                             <form action="{{ route('users.destroy', $user->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa người dùng này?');">
                                 @csrf
@@ -61,6 +64,7 @@
                                 <button type="submit" class="btn btn-danger btn-sm">Xóa</button>
                             </form>
                         </td>
+
                     </tr>
                     @empty
                     <tr>

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Repositories\UserRepository;
 use App\Models\Role;
 use Illuminate\Http\Request;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -18,65 +20,81 @@ class UserController extends Controller
     // Hiển thị danh sách người dùng
     public function index()
     {
-        $users = $this->userRepository->getAllUsers(); // Sử dụng repository để lấy tất cả người dùng
+        $users = User::with('role')->get();
         return view('admin.users.index', compact('users'));
     }
 
     public function create()
     {
         $roles = Role::all();
-        return view('admin.users.create', compact('roles')); // Truyền danh sách vai trò khi tạo người dùng
+        return view('admin.users.create', compact('roles'));
     }
 
     // Hiển thị chi tiết người dùng
     public function show($id)
     {
-        $user = $this->userRepository->getUserById($id); // Sử dụng repository để lấy người dùng theo ID
-        return view('users.show', compact('user'));
+        $user = $this->userRepository->getUserById($id);
+        return view('admin.users.show', compact('user'));
     }
 
-    // Chỉnh sửa thông tin người dùng
+
     public function edit($id)
     {
-        $user = $this->userRepository->getUserById($id); // Lấy người dùng từ repository
-        $roles = Role::all();
-        return view('admin.users.edit', compact('user', 'roles'));
+        $user = User::findOrFail($id);
+        return view('admin.users.edit', compact('user'));
     }
 
     // Cập nhật người dùng
     public function update(Request $request, $id)
     {
-        $this->userRepository->updateUser($id, $request->name, $request->email, $request->role_id); // Cập nhật người dùng thông qua repository
-        return redirect()->route('users.index')->with('success', 'Thông tin người dùng đã được cập nhật.');
-    }
-
-    // Xóa tài khoản người dùng
-    public function destroy($id)
-    {
-        $this->userRepository->deleteUser($id); // Xóa người dùng thông qua repository
-        return redirect()->route('users.index')->with('success', 'Người dùng đã bị xóa.');
-    }
-
-    // Thêm người dùng
-    public function store(Request $request)
-    {
-        // Xác thực dữ liệu đầu vào
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|string|in:admin,author,reader', // Xác nhận vai trò hợp lệ
+            'email' => 'required|email|unique:users,email,' . $id,
+            'role' => 'required|in:admin,author,reader',
         ]);
 
-        // Tạo người dùng mới thông qua repository
-        $this->userRepository->addUser(
-            $request->name,
-            $request->email,
-            Role::where('name', $request->role)->first()->id // Lấy role_id từ bảng roles
-        );
+        $role = Role::where('name', $request->role)->first();
+        $role_id = $role ? $role->id : null;
 
-        return redirect()->route('users.index')->with('success', 'Người dùng đã được thêm thành công!');
+        // Call update in repository
+        $this->userRepository->updateUser($id, $request->name, $request->email, $role_id);
+
+        return redirect()->route('users.index')->with('success', 'Người dùng cập nhập thành công!');
     }
+
+    public function destroy($id)
+    {
+        try {
+            $this->userRepository->deleteUser($id); // Gọi repository để xóa người dùng
+            return redirect()->route('users.index')->with('success', 'Người dùng đã bị xóa.');
+        } catch (\Exception $e) {
+            return redirect()->route('users.index')->with('error', $e->getMessage());
+        }
+    }
+
+    public function store(Request $request)
+    {
+        // Validate input
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6|confirmed', // Xác nhận mật khẩu
+            'role' => 'required|in:admin,author,reader', // Vai trò phải hợp lệ
+        ]);
+
+        // Mã hóa mật khẩu
+        $validated['password'] = Hash::make($request->password);
+
+        // Tìm role_id từ bảng roles dựa trên giá trị role
+        $role = Role::where('name', $request->role)->first();
+        $validated['role_id'] = $role->id;
+
+        // Lưu người dùng mới
+        User::create($validated);
+
+        return redirect()->route('users.index')->with('success', 'Người dùng đã được thêm.');
+    }
+
 
     // Phân quyền người dùng
     // public function assignRole(Request $request, $id)
