@@ -4,10 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Tag;
 use App\Models\Article;
+use App\Repositories\TagRepository;
 use Illuminate\Http\Request;
 
 class TagController extends Controller
 {
+    protected $tagRepository;
+
+    public function __construct(TagRepository $tagRepository)
+    {
+        $this->tagRepository = $tagRepository;
+    }
+
     /**
      * Display a listing of the tags.
      */
@@ -34,7 +42,8 @@ class TagController extends Controller
             'name' => 'required|string|max:255|unique:tags',
         ]);
 
-        Tag::create($validated);
+        // Thêm hashtag mới vào hệ thống thông qua repository
+        $this->tagRepository->addNewHashtag($validated['name']);
 
         return redirect()->route('admin.tags.index')
             ->with('success', 'Hashtag mới đã được tạo thành công!');
@@ -67,8 +76,13 @@ class TagController extends Controller
             'name' => 'required|string|max:255|unique:tags,name,' . $id,
         ]);
 
+        // Cập nhật hashtag mới cho bài viết
         $tag = Tag::findOrFail($id);
+        $oldTagName = $tag->name;
         $tag->update($validated);
+
+        // Sử dụng repository để gọi procedure update hashtag
+        $this->tagRepository->updateHashtagCursor($oldTagName, $validated['name']);
 
         return redirect()->route('admin.tags.index')
             ->with('success', 'Hashtag đã được cập nhật thành công!');
@@ -81,7 +95,7 @@ class TagController extends Controller
     {
         $tag = Tag::findOrFail($id);
 
-        // Xóa tag
+        // Xóa tag và các bài viết liên quan
         $tag->delete();
 
         return redirect()->route('admin.tags.index')
