@@ -3,58 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VietNews</title>
+    <title>@yield('title', 'VietNews')</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
-        .header {
-            background-color: #003366;
-            color: white;
-            padding: 10px 0;
-        }
-
-        .header .logo {
-            display: flex;
-            align-items: center;
-        }
-
-        .header .logo img {
-            width: 80px;
-            margin-right: 10px;
-        }
-
-        .header .nav-link {
-            color: white;
-            margin-right: 15px;
-            font-weight: bold;
-        }
-
-        .header .nav-link:hover {
-            color: #cccccc;
-        }
-
-        .footer {
-            background-color: #003366;
-            color: white;
-            padding: 20px 0;
-            text-align: center;
-        }
-
-        .footer a {
-            color: white;
-            margin: 0 10px;
-        }
-
-        .footer a:hover {
-            color: #cccccc;
-        }
+        .header { background-color: #003366; color: white; padding: 10px 0; }
+        .header .logo { display: flex; align-items: center; }
+        .header .logo img { width: 80px; margin-right: 10px; }
+        .header .nav-link { color: white; margin-right: 15px; font-weight: bold; }
+        .header .nav-link:hover { color: #cccccc; }
+        .footer { background-color: #003366; color: white; padding: 20px 0; text-align: center; }
+        .footer a { color: white; margin: 0 10px; }
+        .footer a:hover { color: #cccccc; }
     </style>
 </head>
 <body>
     <header class="header">
         <div class="container d-flex justify-content-between align-items-center">
             <div class="logo d-flex align-items-center">
-                <img src="{{ asset('images/logoApp.png') }}" alt="Logo">
+                <img src="{{ asset('images/logoApp.jpg') }}" alt="Logo">
                 <h1>VietNews</h1>
             </div>
             <nav class="d-flex align-items-center">
@@ -85,18 +52,6 @@
                 <p>Address: 175 Tay Son Street</p>
                 <p>Email: abc@gmail.com</p>
             </div>
-            <div>
-                <h5>VietNews</h5>
-                <p>Contact: 012345678</p>
-                <p>Address: 175 Tay Son Street</p>
-                <p>Email: abc@gmail.com</p>
-            </div>
-            <div>
-                <h5>VietNews</h5>
-                <p>Contact: 012345678</p>
-                <p>Address: 175 Tay Son Street</p>
-                <p>Email: abc@gmail.com</p>
-            </div>
         </div>
         <div class="mt-3">
             <a href="#"><i class="fab fa-facebook-f"></i></a>
@@ -106,7 +61,6 @@
             <a href="#"><i class="fab fa-twitter"></i></a>
         </div>
     </footer>
-
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
