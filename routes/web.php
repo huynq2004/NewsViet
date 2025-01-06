@@ -6,8 +6,16 @@ use App\Http\Controllers\RoleController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 
-// Require thêm các route khác
+
 require base_path('routes/admin/categories.php');
+
+require base_path('routes/admin/tags.php');
+
+// Group route admin
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+});
+
 require base_path('routes/admin/users.php');
 
 
@@ -22,3 +30,4 @@ Route::get('admin.dashboard', [AdminController::class, 'dashboard'])->name('admi
 Route::get('logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('register', [AuthController::class, 'register']);
+
