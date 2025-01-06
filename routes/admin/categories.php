@@ -1,4 +1,11 @@
 <?php
+
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\RoleController;
+use Illuminate\Support\Facades\Route;
+
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CategoryController;
 
 Route::prefix('admin/categories')->group(function () {
