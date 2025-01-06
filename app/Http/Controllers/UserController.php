@@ -96,7 +96,7 @@ class UserController extends Controller
     }
 
 
-    // Phân quyền người dùng
+    // // Phân quyền người dùng
     // public function assignRole(Request $request, $id)
     // {
     //     $this->userRepository->assignRole($id, $request->role_id); // Gọi repository để phân quyền cho người dùng

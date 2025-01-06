@@ -4,14 +4,11 @@ ON users
 INSTEAD OF DELETE
 AS
 BEGIN
-    -- Kiểm tra xem người dùng bị xóa có phải là Admin không
     IF EXISTS (SELECT * FROM deleted WHERE role_id = 1)
     BEGIN
-        PRINT (N"Không được phép xóa Admin!", 16, 1);
+        PRINT (N"Không được phép xóa Admin!");
         RETURN;
     END
-
-    -- Nếu không phải Admin, thực hiện xóa và ghi lại lịch sử
     DELETE FROM users
     WHERE id IN (SELECT id FROM deleted);
 
@@ -19,6 +16,7 @@ BEGIN
     SELECT id, name, email, GETDATE()
     FROM deleted;
 END;
+
 --Tạo bảng để lưu lịch sử xóa
 CREATE TABLE deleted_users (
     user_id INT,            
@@ -41,7 +39,7 @@ BEGIN
     SELECT @user_name = i.name, @user_email = email, @user_role = r.name
     FROM inserted i
     INNER JOIN roles r ON i.role_id = r.id;
-    PRINT 'Người dùng mới đã được thêm:';
+    PRINT N'Người dùng mới đã được thêm:';
 END;
 
 

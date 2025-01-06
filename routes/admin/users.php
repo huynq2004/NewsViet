@@ -19,6 +19,6 @@ Route::prefix('admin')->middleware('auth')->group(function () {
 
     Route::get('users/{id}', [UserController::class, 'show'])->name('users.show');
     Route::delete('users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
-    Route::get('users/{id}/assign-role', [UserController::class, 'assignRole'])->name('users.assignRole');
-    Route::post('users/{id}/assign-role', [UserController::class, 'storeRole'])->name('users.storeRole');
+    // Route::get('users/{id}/assign-role', [UserController::class, 'assignRole'])->name('users.assignRole');
+    // Route::post('users/{id}/assign-role', [UserController::class, 'storeRole'])->name('users.storeRole');
 });
