@@ -1,23 +1,24 @@
 --Trigger 1 : Xóa thông tin người dùng và ghi lại lịch sử xóa
- CREATE TRIGGER trg_delete_user
+CREATE TRIGGER trg_delete_user
 ON users
-INSTEAD OF DELETE
+AFTER DELETE
 AS
 BEGIN
+    -- Kiểm tra nếu Admin bị xóa
     IF EXISTS (SELECT * FROM deleted WHERE role_id = 1)
     BEGIN
-        PRINT (N"Không được phép xóa Admin!");
+        PRINT (N'Không được phép xóa Admin!');
+        ROLLBACK TRANSACTION;
         RETURN;
-    END
-    DELETE FROM users
-    WHERE id IN (SELECT id FROM deleted);
+    END;
 
+    -- Ghi thông tin người dùng bị xóa vào bảng deleted_users
     INSERT INTO deleted_users (user_id, user_name, user_email, deleted_at)
     SELECT id, name, email, GETDATE()
     FROM deleted;
 END;
 
---Tạo bảng để lưu lịch sử xóa
+
 CREATE TABLE deleted_users (
     user_id INT,            
     user_name NVARCHAR(255), 
