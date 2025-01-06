@@ -13,20 +13,17 @@ return new class extends Migration
         DB::unprepared('
  CREATE TRIGGER trg_delete_user
 ON users
-INSTEAD OF DELETE
+AFTER DELETE
 AS
 BEGIN
-    -- Kiểm tra xem người dùng bị xóa có phải là Admin không
     IF EXISTS (SELECT * FROM deleted WHERE role_id = 1)
     BEGIN
-        RAISERROR (N"Không được phép xóa Admin!", 16, 1);
+        PRINT (N"Không được phép xóa Admin!");
+        ROLLBACK TRANSACTION;
         RETURN;
-    END
+    END;
 
-    -- Nếu không phải Admin, thực hiện xóa và ghi lại lịch sử
-    DELETE FROM users
-    WHERE id IN (SELECT id FROM deleted);
-
+    -- Ghi thông tin người dùng bị xóa vào bảng deleted_users
     INSERT INTO deleted_users (user_id, user_name, user_email, deleted_at)
     SELECT id, name, email, GETDATE()
     FROM deleted;

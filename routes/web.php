@@ -22,3 +22,11 @@ Route::get('admin.dashboard', [AdminController::class, 'dashboard'])->name('admi
 Route::get('logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('register', [AuthController::class, 'register']);
+
+Route::prefix('author')->middleware('auth')->group(function () {
+    Route::get('dashboard', [AuthController::class, 'authorDashboard'])->name('author.dashboard');
+});
+
+Route::prefix('reader')->middleware('auth')->group(function () {
+    Route::get('home', [AuthController::class, 'readerHome'])->name('reader.home');
+});
