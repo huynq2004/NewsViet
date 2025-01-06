@@ -14,14 +14,14 @@
                 </div>
             </div>
         </div>
-
-        <!-- Card Quản lý Thẻ Tag -->
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Quản lý Thẻ Tag</h5>
-                    <p class="card-text">Thêm, sửa, xóa thẻ tag cho bài viết.</p>
-                    <a href='#' class="btn btn-primary">Truy cập</a>
+            <!-- Card Quản lý Thẻ Tag -->
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Quản lý Thẻ Tag</h5>
+                        <p class="card-text">Thêm, sửa, xóa thẻ tag cho bài viết.</p>
+                        <a href="{{ route('admin.tags.index') }}" class="btn btn-primary">Truy cập</a>
+                    </div>
                 </div>
             </div>
         </div>

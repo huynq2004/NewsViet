@@ -17,6 +17,25 @@ class AuthController extends Controller
 
         return view('admin.dashboard');
     }
+    public function authorDashboard()
+    {
+        if (Auth::user()->role_id !== 2) {
+            abort(403, 'Bạn không có quyền truy cập trang này auther.');
+        }
+
+        return view('author.dashboard'); // Trả về view của author
+    }
+
+    // Dashboard cho Reader
+    public function readerHome()
+    {
+        if (Auth::user()->role_id !== 3) {
+            abort(403, 'Bạn không có quyền truy cập trang này reader.');
+        }
+
+        return view('reader.home'); // Trả về view của reader
+    }
+
 
     // Hiển thị form đăng ký
     public function showRegisterForm()
@@ -50,17 +69,31 @@ class AuthController extends Controller
     }
 
     // Xử lý đăng nhập
+    // Xử lý đăng nhập
     public function login(Request $request)
     {
-
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials)) {
-            return redirect()->intended('admin.dashboard');
+            $user = Auth::user();
+
+            // Điều hướng theo vai trò
+            switch ($user->role_id) {
+                case 1: // Admin
+                    return redirect()->route('admin.dashboard');
+                case 2: // Author
+                    return redirect()->route('author.dashboard');
+                case 3: // Reader
+                    return redirect()->route('reader.home');
+                default:
+                    Auth::logout();
+                    return back()->withErrors(['email' => 'Không xác định được vai trò người dùng.']);
+            }
         }
 
         return back()->withErrors(['email' => 'Email hoặc mật khẩu không đúng']);
     }
+
 
     // Đăng xuất
     public function logout()
