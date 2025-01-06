@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Article;
 use App\Repositories\ArticleRepository;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class ArticleController extends Controller
 {
@@ -46,7 +45,6 @@ class ArticleController extends Controller
         // Truyền biến categories vào view
         return view('author.articles.create', compact('categories'));
     }
-    
 
     // Lưu bài viết mới (cho tác giả)
     public function store(Request $request)
@@ -96,14 +94,13 @@ class ArticleController extends Controller
     public function destroy($id)
     {
         $article = Article::findOrFail($id);
-
         // Kiểm tra nếu người dùng là admin hoặc là tác giả của bài viết
-        if (auth()->user()->is_admin || auth()->id() == $article->author_id) {
-            $article->delete();
-            return redirect()->route('articles.index');
-        }
+        // if (auth()->user()->is_admin || auth()->id() == $article->author_id) {
+        //     return redirect()->route('articles.index');
+        // }
+        $article->delete();
 
-        return redirect()->route('articles.index')->withErrors('Bạn không có quyền xóa bài viết này.');
+        return redirect()->route('admin.articles.index')->withErrors('Bạn không có quyền xóa bài viết này.');
     }
 
     // Lấy số lượng bài viết của tác giả (dùng function fn_count_articles_by_author)
