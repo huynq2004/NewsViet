@@ -152,9 +152,10 @@ JOIN roles r ON u.role_id = r.id;
 select *from user_details
 
 
---view 2: Hiển thị người dùng theo vai trò và nhóm theo ngày cập nhật
-CREATE VIEW users_by_role_and_updated_at AS
-SELECT 
+--view 2:hiển thị thông tin về những người dùng đã hoạt động trong tháng vừa qua.
+
+CREATE VIEW active_users_last_month AS
+SELECT
     u.id AS user_id,
     u.name AS user_name,
     u.email,
@@ -163,10 +164,9 @@ SELECT
     u.updated_at
 FROM users u
 JOIN roles r ON u.role_id = r.id
+WHERE u.updated_at >= DATEADD(MONTH, -1, GETDATE());
 
--- Truy vấn từ view
-SELECT * FROM users_by_role_and_updated_at
-ORDER BY updated_at DESC;
+
 
 --cursor 1 : Con trỏ xóa người dùng không hoạt động trong hơn 1 năm
 DECLARE @user_id INT;
