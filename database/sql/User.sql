@@ -168,3 +168,26 @@ JOIN roles r ON u.role_id = r.id
 SELECT * FROM users_by_role_and_updated_at
 ORDER BY updated_at DESC;
 
+--cursor 1 : Con trỏ xóa người dùng không hoạt động trong hơn 1 năm
+DECLARE @user_id INT;
+DECLARE inactive_users_cursor CURSOR FOR
+    SELECT id
+    FROM users
+    WHERE DATEDIFF(YEAR, updated_at, GETDATE()) > 1; -- Không hoạt động > 1 năm
+
+OPEN inactive_users_cursor;
+
+FETCH NEXT FROM inactive_users_cursor INTO @user_id;
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    -- Xóa người dùng không hoạt động
+    DELETE FROM users WHERE id = @user_id;
+
+    PRINT 'Người dùng với ID ' + CAST(@user_id AS NVARCHAR(10)) + ' đã bị xóa vì không hoạt động trong hơn 1 năm.';
+
+    FETCH NEXT FROM inactive_users_cursor INTO @user_id;
+END;
+
+CLOSE inactive_users_cursor;
+DEALLOCATE inactive_users_cursor;
