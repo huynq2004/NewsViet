@@ -26,21 +26,21 @@ CREATE TABLE deleted_users (
     deleted_at DATETIME      
 );
 
---Trigger 2: Thêm người dùng 
-
-CREATE TRIGGER trg_insert_user
+--trigg2 : 
+CREATE TRIGGER trg_update_user_role
 ON users
-AFTER INSERT
+AFTER UPDATE
 AS
 BEGIN
-    DECLARE @user_name NVARCHAR(255),
-	@user_email NVARCHAR(255),
-	@user_role NVARCHAR(255);
-
-    SELECT @user_name = i.name, @user_email = email, @user_role = r.name
-    FROM inserted i
-    INNER JOIN roles r ON i.role_id = r.id;
-    PRINT N'Người dùng mới đã được thêm:';
+    -- Chỉ chạy khi cột role_id được thay đổi
+    IF UPDATE(role_id)
+    BEGIN
+        UPDATE users
+        SET updated_at = GETDATE()
+        WHERE id IN (SELECT id FROM inserted);
+        
+        PRINT 'Đã cập nhật thời gian sửa đổi do thay đổi vai trò người dùng.';
+    END
 END;
 
 
@@ -89,35 +89,35 @@ BEGIN
     RETURN @count;
 END;
 
---Proc 1: Thủ tục kiểm tra người dùng theo vai trò và in ra thông tin (cursor)
+--Proc 1: Thủ tục THÊM người dùng mới mã hóa mật khẩu
 
-CREATE PROCEDURE check_users_by_role
-    @role_name NVARCHAR(255) 
+CREATE PROCEDURE sp_insert_user
+    @name NVARCHAR(255),
+    @email NVARCHAR(255),
+    @password NVARCHAR(255),
+    @role_id INT
 AS
 BEGIN
-    DECLARE @user_id INT;
-    DECLARE @user_name NVARCHAR(255);
-    DECLARE @user_email NVARCHAR(255);
-    DECLARE @role_name_from_db NVARCHAR(255);
+    DECLARE @role_name NVARCHAR(255);
+    DECLARE @hashed_password VARBINARY(64); -- Dùng để lưu mật khẩu băm
 
-    DECLARE user_cursor CURSOR FOR
-        SELECT u.id, u.name, u.email, r.name
-        FROM users u
-        INNER JOIN roles r ON u.role_id = r.id
-        WHERE r.name = @role_name; 
-    OPEN user_cursor;
+    -- Lấy tên vai trò (role name) dựa trên role_id
+    SELECT @role_name = name
+    FROM roles
+    WHERE id = @role_id;
 
-    FETCH NEXT FROM user_cursor INTO @user_id, @user_name, @user_email, @role_name_from_db;
-    WHILE @@FETCH_STATUS = 0
+    IF @role_name IS NULL
     BEGIN
-        PRINT 'User: ' + @user_name + ', email: ' + @user_email ;
-        FETCH NEXT FROM user_cursor INTO @user_id, @user_name, @user_email, @role_name_from_db;
-    END
+        PRINT 'Lỗi: Vai trò không tồn tại.';
+        RETURN;
+    END;
 
-    CLOSE user_cursor;
-    DEALLOCATE user_cursor;
+    -- Mã hóa mật khẩu bằng SHA2_256
+    SET @hashed_password = HASHBYTES('SHA2_256', @password);
 
-    PRINT 'Đã kiểm tra tất cả người dùng với vai trò: ' + @role_name;
+    INSERT INTO users (name, email, password, role_id, created_at, updated_at)
+    VALUES (@name, @email, CONVERT(NVARCHAR(MAX), @hashed_password, 1), @role_id, GETDATE(), GETDATE());
+    PRINT 'Người dùng mới đã được thêm: ' + @name + ' - ' + @email + ' - Vai trò: ' + @role_name;
 END;
 
 --Proc 2 : Chỉnh sửa người dùng

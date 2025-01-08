@@ -20,20 +20,16 @@ class AuthController extends Controller
     public function authorDashboard()
     {
         if (Auth::user()->role_id !== 2) {
-            abort(403, 'Bạn không có quyền truy cập trang này auther.');
+            return view('author.dashboard'); // Trả về view của author
         }
-
-        return view('author.dashboard'); // Trả về view của author
     }
 
     // Dashboard cho Reader
     public function readerHome()
     {
         if (Auth::user()->role_id !== 3) {
-            abort(403, 'Bạn không có quyền truy cập trang này reader.');
+            return view('reader.home'); // Trả về view của reader
         }
-
-        return view('reader.home'); // Trả về view của reader
     }
 
 
