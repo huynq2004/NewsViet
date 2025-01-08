@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name', 100)->unique();
             $table->string('description', 255)->nullable();
             $table->foreignId('parent_id')->nullable()->constrained('categories'); //dùng trigger để khi xóa dmuc cha sẽ xóa tất cả danh mục con
+            $table->boolean('is_active')->default(1);
             $table->timestamps();
         });
     }
