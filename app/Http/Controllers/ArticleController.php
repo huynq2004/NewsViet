@@ -27,7 +27,7 @@ class ArticleController extends Controller
     public function show($id)
     {
         // Lấy bài viết theo ID
-        $article = Article::findOrFail($id);
+        $article = Article::with('comments.user')->findOrFail($id); // Lấy bài viết và bình luận kèm theo
 
         // Lấy các tag của bài viết từ function fn_get_article_tags
         $tags = $this->articleRepository->getArticleTags($id);  // Sử dụng phương thức repository
@@ -48,22 +48,30 @@ class ArticleController extends Controller
 
     // Lưu bài viết mới (cho tác giả)
     public function store(Request $request)
-    {
-        // Validate dữ liệu
-        $request->validate([
-            'title' => 'required|string',
-            'content' => 'required|string',
-            'category_id' => 'required|exists:categories,id',
-            'image' => 'nullable|image|max:2048',
-        ]);
+{
+    // Validate dữ liệu
+    $request->validate([
+        'title' => 'required|string',
+        'content' => 'required|string',
+        'category_id' => 'required|exists:categories,id',
+        'image' => 'nullable|image|max:2048',  // Hạn chế kích thước ảnh tối đa là 2MB
+    ]);
 
-        // Tạo bài viết mới và lưu vào cơ sở dữ liệu
-        $article = new Article($request->all());
-        $article->author_id = auth()->id();  // Gán tác giả là người đăng nhập
-        $article->save();
-
-        return redirect()->route('author.articles.index');
+    // Xử lý tải ảnh nếu có
+    $imagePath = null;
+    if ($request->hasFile('image')) {
+        $imagePath = $request->file('image')->store('images', 'public');  // Lưu ảnh vào thư mục public/articles_images
     }
+
+    // Tạo bài viết mới và lưu vào cơ sở dữ liệu
+    $article = new Article($request->all());
+    $article->author_id = auth()->id();  // Gán tác giả là người đăng nhập
+    $article->image = $imagePath;  // Lưu đường dẫn ảnh vào cột image
+    $article->save();
+
+    return redirect()->route('author.dashboard')->with('success', 'Bài viết đã được tạo thành công');
+}
+
 
     // Chỉnh sửa bài viết (cho tác giả)
     public function edit($id)

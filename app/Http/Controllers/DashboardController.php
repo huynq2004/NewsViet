@@ -19,14 +19,15 @@ class DashboardController extends Controller
     }
 
     public function author()
-    {
-        $totalArticles = Article::count();
-        $totalUsers = User::count();
-        $totalCategories = Category::count();
-        $totalTags = Tag::count();
+{
 
-        return view('author.dashboard', compact('totalArticles', 'totalUsers', 'totalCategories', 'totalTags'));
-    }
+    // Lấy danh sách bài viết của tác giả hiện tại
+    $articles = Article::where('author_id', auth()->id())->get();
+
+    // Trả về view với các dữ liệu cần thiết
+    return view('author.dashboard', compact( 'articles'));
+}
+
 
     public function reader()
     {

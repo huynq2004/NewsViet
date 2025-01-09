@@ -120,7 +120,7 @@
             @foreach($articles as $article)
             <div class="col-md-4 mb-4">
                 <div class="article-card">
-                    <img src="{{ asset('storage/' . $article->image) }}" alt="{{ $article->title }}">
+                    <img src="{{ asset('images/' . $article->image) }}" alt="{{ $article->title }}">
                     <div class="card-body">
                         <h5>{{ $article->title }}</h5>
                         <p>{{ Str::limit($article->content, 100) }}</p>
