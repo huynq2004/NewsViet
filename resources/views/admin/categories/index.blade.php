@@ -32,6 +32,12 @@
                     </li>
                 </ul>
 
+                <!-- Nút Logout -->
+                <form action="{{ route('logout') }}" method="POST" class="mt-3">
+                    @csrf
+                    <button type="submit" class="btn btn-danger w-100">Đăng xuất</button>
+                </form>
+
                 <!-- Thông tin dưới cùng -->
                 <hr class="text-white">
                 <h5>NewsViet</h5>

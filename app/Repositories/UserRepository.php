@@ -41,7 +41,7 @@ class UserRepository
     // Kiểm tra người dùng theo vai trò
     public function checkUsersByRole($role_name)
     {
-        DB::select('EXEC check_users_by_role ?', [$role_name]);
+        return DB::select('EXEC check_users_by_role ?', [$role_name]);
     }
 
     // Xóa người dùng 
