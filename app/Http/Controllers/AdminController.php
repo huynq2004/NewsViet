@@ -1,7 +1,10 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Models\Article;
+use App\Models\Category;
+use App\Models\User;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -64,6 +67,10 @@ class AdminController extends Controller
 
     public function dashboard()
     {
-        return view('admin.dashboard');  // Trả về view dashboard của admin
+        $totalPosts = Article::count();
+        $totalUsers = User::count();
+        $totalCategories = Category::count();
+        $totalTags = Tag::count();
+        return view('admin.dashboard', compact('totalPosts', 'totalUsers', 'totalCategories', 'totalTags')); // Trả về view dashboard của admin
     }
 }

@@ -52,7 +52,7 @@ public function edit($id)
     $comment = new Comment();
     $comment->content = $request->input('content');
     $comment->article_id = $articleId;
-    $comment->user_id = auth()->user()->id; // Giả sử người dùng đã đăng nhập
+    $comment->user_id = auth()->id; // Giả sử người dùng đã đăng nhập
     $comment->save();
 
     return redirect()->route('comments.index', ['articleId' => $articleId])

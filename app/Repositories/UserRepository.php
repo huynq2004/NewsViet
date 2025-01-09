@@ -8,22 +8,22 @@ use Illuminate\Support\Facades\DB;
 class UserRepository
 {
     // Thêm người dùng mới
-    public function addUser($name, $email, $role_id)
+    public function addUser($name, $email, $role)
     {
         DB::table('users')->insert([
             'name' => $name,
             'email' => $email,
-            'role_id' => $role_id,
+            'role' => $role,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
     }
 
     // // Cập nhật thông tin người dùng
-    public function updateUser($user_id, $name = null, $email = null, $role_id = null)
+    public function updateUser($user_id, $name = null, $email = null, $role = null)
     {
         // Sử dụng DB::statement thay vì DB::select
-        DB::statement('EXEC update_user ?, ?, ?, ?', [$user_id, $name, $email, $role_id]);
+        DB::statement('EXEC update_user ?, ?, ?, ?', [$user_id, $name, $email, $role]);
 
         // Sau khi thực thi, trả về thông điệp hoặc xử lý sau khi gọi procedure thành công
         return 'User updated successfully!';
@@ -48,10 +48,10 @@ class UserRepository
     public function deleteUser($user_id)
     {
         // Lấy vai trò người dùng
-        $role = DB::table('users')->where('id', $user_id)->value('role_id');
+        $role = DB::table('users')->where('id', $user_id)->value('role');
 
         // Kiểm tra nếu là Admin
-        if ($role == 1) {
+        if ($role == 'admin') {
             throw new \Exception('Không được phép xóa Admin!');
         }
 

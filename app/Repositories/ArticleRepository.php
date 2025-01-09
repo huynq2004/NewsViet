@@ -37,7 +37,10 @@ class ArticleRepository
     public function getArticleTags($articleId)
     {
         $result = DB::select('SELECT dbo.fn_get_article_tags(?) AS tags', [$articleId]);
-        return $result[0]->tags ?? [];
+        $tags = json_decode($result[0]->tags, true);
+
+        // Nếu không có kết quả hoặc giải mã không thành công, trả về mảng rỗng
+        return is_array($tags) ? $tags : [];
     }
 
     // Phương thức lấy danh sách bài viết với thông tin thẻ và thể loại

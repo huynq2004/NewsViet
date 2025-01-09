@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Category;
 use App\Repositories\CategoryRepository;
 use Illuminate\Http\Request;
@@ -19,7 +20,7 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = $this->categoryRepo->getCategoriesWithTotalArticles();
+        $categories = Category::all();
         return view('admin.categories.index', compact('categories'));
     }
 
@@ -35,6 +36,30 @@ class CategoryController extends Controller
     /**
      * Thêm mới danh mục.
      */
+
+    public function edit($id)
+    {
+        $category = Category::findOrFail($id);
+        $categories = Category::whereNull('parent_id')->get();
+
+        return view('admin.categories.edit', compact('category', 'categories'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|unique:categories,name,' . $id,
+            'description' => 'nullable|string',
+            'parent_id' => 'nullable|exists:categories,id',
+        ]);
+
+        $category = Category::findOrFail($id);
+        $category->update($request->all());
+
+        return redirect()->route('admin.categories.index')->with('success', 'Danh mục cập nhật thành công');
+    }
+
+
     public function store(Request $request)
     {
         $request->validate([
@@ -43,18 +68,19 @@ class CategoryController extends Controller
             'parent_id' => 'nullable|exists:categories,id',
         ]);
 
-        // Sử dụng Eloquent để tạo danh mục mới
-        $category = new Category($request->all());
-        return redirect()->route('admin.categories.index')->with('success', 'Category added successfully');
-    }
+        
+        Category::create($request->all());
 
+        // Thêm thông báo flash sau khi lưu thành công
+        return redirect()->route('admin.categories.index')->with('success', 'Danh mục đã được thêm thành công');
+    }
     /**
      * Xóa danh mục và các danh mục con.
      */
     public function destroy($id)
     {
         $this->categoryRepo->deleteCategoryWithChildren($id);
-        return redirect()->route('admin.categories.index')->with('success', 'Category deleted successfully');
+        return redirect()->route('admin.categories.index')->with('success', 'Danh mục đã xóa thành công');
     }
 
     /**
@@ -86,6 +112,6 @@ class CategoryController extends Controller
         ]);
 
         $this->categoryRepo->moveSubcategories($request->old_parent_id, $request->new_parent_id);
-        return redirect()->route('admin.categories.index')->with('success', 'Subcategories moved successfully');
+        return redirect()->route('admin.categories.index')->with('success', 'Danh mục con đã được chuyển thành công');
     }
 }

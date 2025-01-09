@@ -56,7 +56,7 @@ BEGIN
     DECLARE @child_id INT;
 
     -- Mở con trỏ để lấy danh mục con
-    DECLARE category_cursor CURSOR FOR
+    DECLARE category_cursor CURSOR LOCAL FOR
         SELECT id FROM categories WHERE parent_id = @category_id;
 
     OPEN category_cursor;

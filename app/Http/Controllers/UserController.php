@@ -59,16 +59,16 @@ class UserController extends Controller
         // Call update in repository
         $this->userRepository->updateUser($id, $request->name, $request->email, $role_id);
 
-        return redirect()->route('users.index')->with('success', 'Người dùng cập nhập thành công!');
+        return redirect()->route('admin.users.index')->with('success', 'Người dùng cập nhập thành công!');
     }
 
     public function destroy($id)
     {
         try {
             $this->userRepository->deleteUser($id); // Gọi repository để xóa người dùng
-            return redirect()->route('users.index')->with('success', 'Người dùng đã bị xóa.');
+            return redirect()->route('admin.users.index')->with('success', 'Người dùng đã bị xóa.');
         } catch (\Exception $e) {
-            return redirect()->route('users.index')->with('error', $e->getMessage());
+            return redirect()->route('admin.users.index')->with('error', $e->getMessage());
         }
     }
 
