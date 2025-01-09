@@ -9,15 +9,33 @@ use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\ReaderController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\CommentController;
 
 // // Các route admin cho bài viết
-require base_path('routes/admin/articles.php');
+Route::prefix('admin/articles')->group(function () {
+    Route::get('/', [ArticleController::class, 'index'])->name('admin.articles.index');
+    Route::delete('/{id}', [ArticleController::class, 'destroy'])->name('admin.articles.destroy');
+});
+
 
 // // Các route reader cho bài viết
-require base_path('routes/reader/articles.php');
+
+Route::prefix('articles')->group(function () {
+    // Hiển thị danh sách bài viết cho người đọc
+    Route::get('/', [ArticleController::class, 'index'])->name('reader.articles.index');
+    // Hiển thị chi tiết bài viết
+    Route::get('/{id}', [ArticleController::class, 'show'])->name('reader.articles.show');
+});
 
 // // Các route author cho bài viết
-require base_path('routes/author/articles.php');
+Route::prefix('author/articles')->group(function () {
+    Route::get('/', [ArticleController::class, 'authorIndex'])->name('author.articles.index');
+    Route::get('/create', [ArticleController::class, 'create'])->name('author.articles.create');
+    Route::post('/', [ArticleController::class, 'store'])->name('author.articles.store');
+    Route::get('/{id}/edit', [ArticleController::class, 'edit'])->name('author.articles.edit');
+    Route::put('/{id}', [ArticleController::class, 'update'])->name('author.articles.update');
+    Route::delete('/{id}', [ArticleController::class, 'destroy'])->name('author.articles.destroy');
+});
 
 // Author
 Route::middleware(['auth', 'role:author'])->group(function () {
@@ -34,7 +52,7 @@ Route::middleware(['auth', 'role:reader'])->group(function () {
 });
 
 // require base_path('routes/admin/categories.php');
-Route::get('author/dashboard', [AuthorController::class, 'dashboard'])->name('author.dashboard');
+Route::get('author/dashboard', [DashboardController::class, 'dashboard'])->name('author.dashboard');
 
 
 Route::get('/reader/dashboard', [ReaderController::class, 'dashboard'])->name('reader.dashboard');
@@ -43,7 +61,31 @@ Route::get('/reader/dashboard', [ReaderController::class, 'dashboard'])->name('r
 
 require base_path('routes/admin/tags.php');
 
-require __DIR__.'/reader/comments.php';
+// Group các route dành cho quản lý bình luận
+Route::prefix('comments')->name('comments.')->group(function () {
+
+    // Hiển thị danh sách bình luận của bài viết
+    Route::get('/article/{articleId}', [CommentController::class, 'index'])->name('index');
+
+    // Thêm bình luận vào bài viết
+    Route::post('/article/{articleId}', [CommentController::class, 'store'])->name('store');
+
+    // Hiển thị thông tin chi tiết của bình luận
+    Route::get('/{id}', [CommentController::class, 'show'])->name('show');
+
+    // Hiển thị form chỉnh sửa bình luận
+    Route::get('/{id}/edit', [CommentController::class, 'edit'])->name('edit');  // Đường dẫn cho edit
+
+    // Cập nhật bình luận
+    Route::put('/{id}', [CommentController::class, 'update'])->name('update');
+
+    // Xóa bình luận
+    Route::delete('/{id}', [CommentController::class, 'destroy'])->name('destroy');
+
+    // Báo cáo bình luận vi phạm
+    Route::post('/{id}/report', [CommentController::class, 'report'])->name('report');
+});
+
 
 Route::get('/', [DashboardController::class, 'reader'])->name('home');
 
