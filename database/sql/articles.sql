@@ -76,11 +76,6 @@ BEGIN
 END;
 
 
-
-
-
-
-
 --TRIGGER 2: CẬP NHẬT THỜI GIAN SỬA BÀI VIẾT KHI CÓ THAY ĐỔI 
 
 CREATE TRIGGER trg_update_article_time
@@ -92,10 +87,6 @@ BEGIN
     SET updated_at = GETDATE()
     WHERE id IN (SELECT id FROM inserted);
 END;
-
-
-
-
 
 --PROC 1: THÊM MỘT BÀI VIẾT MỚI
 CREATE PROCEDURE sp_add_article
@@ -111,11 +102,7 @@ BEGIN
 END;
 
 
-
-
-
 --PROC2: LẤY DANH SÁCH CÁC BÀI VIẾT THEO DANH MỤC 
-
 CREATE PROCEDURE sp_get_articles_by_category
     @category_id INT
 AS
@@ -128,7 +115,6 @@ END;
 
 
 --cursor 1: Lấy danh sách bài viết theo con trỏ 
-
 CREATE PROCEDURE FetchArticlesWithCursor
 AS
 BEGIN
