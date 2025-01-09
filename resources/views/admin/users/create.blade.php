@@ -23,7 +23,7 @@
         </div>
         @endif
 
-        <form action="{{ route('users.store') }}" method="POST">
+        <form action="{{ route('admin.users.store') }}" method="POST">
             @csrf
             <div class="mb-3">
                 <label for="name" class="form-label">Tên:</label>
@@ -90,9 +90,9 @@
             <div class="mb-3">
                 <label for="role" class="form-label">Vai trò:</label>
                 <select name="role" id="role" class="form-control @error('role') is-invalid @enderror">
-                    <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
-                    <option value="author" {{ old('role') == 'author' ? 'selected' : '' }}>Author</option>
-                    <option value="reader" {{ old('role') == 'reader' ? 'selected' : '' }}>Reader</option>
+                    <option value="admin" {{ old('role', $user->role ?? '') == 'admin' ? 'selected' : '' }}>Admin</option>
+                    <option value="author" {{ old('role', $user->role ?? '') == 'author' ? 'selected' : '' }}>Author</option>
+                    <option value="reader" {{ old('role', $user->role ?? '') == 'reader' ? 'selected' : '' }}>Reader</option>
                 </select>
                 @error('role')
                 <div class="invalid-feedback">
@@ -101,7 +101,7 @@
                 @enderror
             </div>
             <button type="submit" class="btn btn-primary">Thêm người dùng</button>
-            <a href="{{ route('users.index') }}" class="btn btn-secondary">Quay lại danh sách</a>
+            <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Quay lại danh sách</a>
         </form>
     </div>
 

@@ -26,7 +26,6 @@ class Category extends Model
         return $this->hasMany(Category::class, 'parent_id');
     }
 
-    // Quan hệ với Article
     public function articles()
     {
         return $this->hasMany(Article::class);

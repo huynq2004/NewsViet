@@ -1,112 +1,117 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Repositories\CategoryRepository;
+
 use App\Models\Category;
+use App\Repositories\CategoryRepository;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    protected $categoryRepository;
+    protected $categoryRepo;
 
-    public function __construct(CategoryRepository $categoryRepository)
+    public function __construct(CategoryRepository $categoryRepo)
     {
-        $this->categoryRepository = $categoryRepository;
+        $this->categoryRepo = $categoryRepo;
     }
+
     /**
-     * Display a listing of the resource.
+     * Hiển thị danh sách danh mục với tổng số bài viết.
      */
-    public function countChild(string $id)
-    {
-        $childnum = $this->categoryRepository->countChildCategory($id);
-        return view('categories.index', compact('childnum'));
-    }
-
     public function index()
     {
-        $categories = Category::with('parent')->paginate(5);
+        $categories = Category::all();
         return view('admin.categories.index', compact('categories'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Hiển thị giao diện tạo danh mục mới.
      */
     public function create()
     {
-        $categories = Category::all(); // Lấy tất cả danh mục để chọn Parent
+        $categories = $this->categoryRepo->getCategoryTree();
         return view('admin.categories.create', compact('categories'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Thêm mới danh mục.
      */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'parent_id' => 'nullable|exists:categories,id', // parent_id có thể null
-        ]);
 
-        Category::create($validated);
-
-        return redirect()->route('admin.categories.index')
-            ->with('success', 'Danh mục mới đã được tạo thành công!');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        $category = Category::with('children')->findOrFail($id);
-        return view('admin.categories.show', compact('category'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function edit($id)
     {
         $category = Category::findOrFail($id);
-        $categories = Category::where('id', '!=', $id)->get(); // Loại bỏ chính nó khỏi danh sách Parent
+        $categories = Category::whereNull('parent_id')->get();
+
         return view('admin.categories.edit', compact('category', 'categories'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
+        $request->validate([
+            'name' => 'required|unique:categories,name,' . $id,
             'description' => 'nullable|string',
             'parent_id' => 'nullable|exists:categories,id',
         ]);
 
         $category = Category::findOrFail($id);
-        $category->update($validated);
+        $category->update($request->all());
 
-        return redirect()->route('admin.categories.index')
-            ->with('success', 'Danh mục đã được cập nhật thành công!');
+        return redirect()->route('admin.categories.index')->with('success', 'Danh mục cập nhật thành công');
+    }
+
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|unique:categories,name',
+            'description' => 'nullable|string',
+            'parent_id' => 'nullable|exists:categories,id',
+        ]);
+
+        
+        Category::create($request->all());
+
+        // Thêm thông báo flash sau khi lưu thành công
+        return redirect()->route('admin.categories.index')->with('success', 'Danh mục đã được thêm thành công');
+    }
+    /**
+     * Xóa danh mục và các danh mục con.
+     */
+    public function destroy($id)
+    {
+        $this->categoryRepo->deleteCategoryWithChildren($id);
+        return redirect()->route('admin.categories.index')->with('success', 'Danh mục đã xóa thành công');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Hiển thị cây danh mục theo cấu trúc cha-con.
      */
-    public function destroy(string $id)
+    public function showTree()
     {
-        $category = Category::findOrFail($id);
+        $categoryTree = $this->categoryRepo->getCategoryTree();
+        return view('admin.categories.tree', compact('categoryTree'));
+    }
 
-        // Kiểm tra nếu danh mục có con
-        if ($category->children()->count() > 0) {
-            return redirect()->route('admin.categories.index')
-                ->with('error', 'Không thể xóa danh mục này vì nó đang có danh mục con.');
-        }
+    /**
+     * Lấy danh sách danh mục con của một danh mục.
+     */
+    public function getSubcategories($id)
+    {
+        $subcategories = $this->categoryRepo->getSubcategories($id);
+        return response()->json($subcategories);
+    }
 
-        $category->delete();
+    /**
+     * Chuyển danh mục con sang danh mục cha mới.
+     */
+    public function moveSubcategories(Request $request)
+    {
+        $request->validate([
+            'old_parent_id' => 'required|exists:categories,id',
+            'new_parent_id' => 'required|exists:categories,id',
+        ]);
 
-        return redirect()->route('admin.categories.index')
-            ->with('success', 'Danh mục đã được xóa thành công!');
+        $this->categoryRepo->moveSubcategories($request->old_parent_id, $request->new_parent_id);
+        return redirect()->route('admin.categories.index')->with('success', 'Danh mục con đã được chuyển thành công');
     }
 }

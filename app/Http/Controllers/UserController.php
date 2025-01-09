@@ -26,8 +26,7 @@ class UserController extends Controller
 
     public function create()
     {
-        $roles = Role::all();
-        return view('admin.users.create', compact('roles'));
+        return view('admin.users.create');
     }
 
     // Hiển thị chi tiết người dùng
@@ -53,22 +52,19 @@ class UserController extends Controller
             'role' => 'required|in:admin,author,reader',
         ]);
 
-        $role = Role::where('name', $request->role)->first();
-        $role_id = $role ? $role->id : null;
-
         // Call update in repository
-        $this->userRepository->updateUser($id, $request->name, $request->email, $role_id);
+        $this->userRepository->updateUser($id, $request->name, $request->email, $request->role);
 
-        return redirect()->route('users.index')->with('success', 'Người dùng cập nhập thành công!');
+        return redirect()->route('admin.users.index')->with('success', 'Người dùng cập nhập thành công!');
     }
 
     public function destroy($id)
     {
         try {
             $this->userRepository->deleteUser($id); // Gọi repository để xóa người dùng
-            return redirect()->route('users.index')->with('success', 'Người dùng đã bị xóa.');
+            return redirect()->route('admin.users.index')->with('success', 'Người dùng đã bị xóa.');
         } catch (\Exception $e) {
-            return redirect()->route('users.index')->with('error', $e->getMessage());
+            return redirect()->route('admin.users.index')->with('error', $e->getMessage());
         }
     }
 
@@ -85,14 +81,10 @@ class UserController extends Controller
         // Mã hóa mật khẩu
         $validated['password'] = Hash::make($request->password);
 
-        // Tìm role_id từ bảng roles dựa trên giá trị role
-        $role = Role::where('name', $request->role)->first();
-        $validated['role_id'] = $role->id;
-
         // Lưu người dùng mới
         User::create($validated);
 
-        return redirect()->route('users.index')->with('success', 'Người dùng đã được thêm.');
+        return redirect()->route('admin.users.index')->with('success', 'Người dùng đã được thêm.');
     }
 
 

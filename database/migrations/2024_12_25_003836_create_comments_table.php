@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->text('content');
             $table->foreignId('article_id')->constrained('articles')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('users'); //dùng trigger để khi xóa user cũng sẽ xóa tất cả comment của người đó
+            $table->foreignId('user_id')->constrained('users'); 
             $table->timestamps();
         });
     }

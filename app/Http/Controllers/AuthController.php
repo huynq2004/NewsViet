@@ -40,7 +40,7 @@ class AuthController extends Controller
         ]);
 
         Auth::login($user);
-        return redirect()->route('dashboard');
+        return redirect()->route('home');
     }
 
     // Hiển thị form đăng nhập
@@ -56,9 +56,17 @@ class AuthController extends Controller
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials)) {
-            return redirect()->intended('admin.dashboard');
+            // Kiểm tra vai trò của người dùng
+            $user = Auth::user();
+            if ($user->role === 'admin') {
+                return redirect()->route('admin.dashboard');  // Chuyển hướng đến admin.dashboard
+            } elseif ($user->role === 'author') {
+                return redirect()->route('author.dashboard');  // Chuyển hướng đến author.dashboard
+            } else {
+                return redirect()->route('home');  // Chuyển hướng đến home cho người dùng là reader
+            }
         }
-
+    
         return back()->withErrors(['email' => 'Email hoặc mật khẩu không đúng']);
     }
 
@@ -66,6 +74,6 @@ class AuthController extends Controller
     public function logout()
     {
         Auth::logout();
-        return redirect()->route('login');
+        return redirect()->route('home');
     }
 }
